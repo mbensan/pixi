@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+
+  <title>Escudo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000000;
+    }
+
+    .rendererView {
+      position: absolute;
+      display: block;
+      /*width: 100%;
+      height: 100%;*/
+    }
+  </style>
+  
+  <script src="js/pixi.min.js"></script>
+
+</head>
+<body>
+
+  <script>
+  /* bg: 2095 x 1360 */
+  /* ruleta: 654 x 654 */
+  var viewWidth = 1047;
+  var viewHeight = 680;
+
+  // Create a pixi renderer
+  var renderer = PIXI.autoDetectRenderer(viewWidth, viewHeight);
+  renderer.view.className = "rendererView";
+  
+  // add render view to DOM
+  document.body.appendChild(renderer.view);
+
+  // create an new instance of a pixi stage
+  var interactive = true;
+  var stage = new PIXI.Stage(0xFFFFFF, interactive);
+
+  // create a background texture
+  var bg_textura = PIXI.Texture.fromImage("img/bg_min.png");
+  var ruleta_textura = PIXI.Texture.fromImage('img/ruleta_min.png');
+  // create a new background sprite
+  var bg_sprite = new PIXI.Sprite(bg_textura);
+  var ruleta_sprite = new PIXI.Sprite(ruleta_textura);
+  //ruleta_sprite.setInteractive(true);
+  ruleta_sprite.interactive = true;
+
+  ruleta_sprite.position.x = 412;
+  ruleta_sprite.position.y = 340;
+
+  ruleta_sprite.anchor.x = ruleta_sprite.anchor.y = 0.5;
+
+  stage.addChild(bg_sprite);
+  stage.addChild(ruleta_sprite);
+
+  var punto_inicial;
+  var punto_final;
+
+  var dos_pi = Math.PI * 2;
+  var angulo_inicial = Math.random() * 2 * Math.PI;
+  
+  ruleta_sprite.rotation = angulo_inicial;
+
+  // variables de animacion por iniciar
+  var vel_angular_inicial = 0;
+  var ac_angular = 0;
+  var tiempo_inicial = 0;
+  var angulo = 0;
+
+  requestAnimationFrame(animate);
+
+  function animate() 
+  { 
+    var tiempo = ((new Date()).getTime() - tiempo_inicial) / 1000;
+    var vel_angular = vel_angular_inicial + ac_angular * tiempo;
+    
+    if (vel_angular * vel_angular_inicial > 0){
+      angulo = (angulo_inicial + vel_angular_inicial * tiempo + 0.5 *  ac_angular * tiempo * tiempo) % dos_pi;
+
+      ruleta_sprite.rotation = angulo;
+    }
+    // time to render the state!
+    renderer.render(stage);
+    requestAnimationFrame( animate );
+  }
+
+  function iniciar() {
+    vel_angular_inicial = (Math.random() * 3 * Math.PI) + 9;
+    ac_angular = - (vel_angular_inicial / 4);
+    tiempo_inicial = (new Date()).getTime();
+  }
+
+  ruleta_sprite.touchstart = function(interactionData) {
+    punto_inicial = interactionData.getLocalPosition(this.parent);
+    console.log(punto_inicial);
+  }
+
+  ruleta_sprite.touchend = ruleta_sprite.touchendoutside = function(interactionData) {
+    punto_final = interactionData.getLocalPosition(this.parent);
+    console.log(punto_final);
+    if(Math.abs(punto_inicial.y - punto_final.y) > 80){
+      iniciar();
+    }
+  }
+
+  /*ruleta_sprite.touchendoutside = function(interactionData) {
+    punto_final = interactionData.getLocalPosition(this.parent);
+    console.log(punto_final);
+  }*/
+
+  </script>
+
+  </body>
+</html>
